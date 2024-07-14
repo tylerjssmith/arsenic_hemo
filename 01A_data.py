@@ -10,21 +10,6 @@
 import os
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-##### Define Plotting Functions ################################################
-def density_plot(data, x, xlab):
-    plt.clf()
-    ax = sns.kdeplot(data = data, x = x)
-    ax.set(xlabel = xlab, ylabel = 'Density')
-    plt.show()
-    
-def box_plot(data, y, ylab):
-    plt.clf()
-    ax = sns.boxplot(data = data, y = y)
-    ax.set(xlabel = '', ylabel = ylab)
-    plt.show()
 
 ##### Read Data ################################################################
 # Set Working Directory
@@ -157,15 +142,18 @@ df = pregtrak.merge(kidtrak, how = 'left') \
     .merge(pef,      how = 'left') \
     .merge(ferritin, how = 'left')
 
-# Set Index
-#df = df.set_index('UID')
+# Set Types
+# (Integers)
+tmp_int = ['UID','CHILDUID','DOBYY','EDUCATION','WK','STATUS','FETABS']
 
-# Format Dates
+for i in df.columns[df.columns.str.contains('|'.join(tmp_int))]:
+    df[i] = df[i].astype('Int64')
+
+del tmp_int
+
+# (Dates)
 for i in ['CHILDDOB','SEDATE','SVXDATE','SMDATE','SM3DATE']:
-  df[i] = pd.to_datetime(df[i])
-
-# Inspect Data
-df.head()
+  df[i] = pd.to_datetime(df[i]).dt.normalize()
 
 # Remove Data Objects
 del pregtrak
@@ -180,6 +168,9 @@ del parity
 del ses
 del pef
 del ferritin
+
+# Inspect Data
+df.head()
 
 ##### Limit to 1 Row/Woman #####################################################
 # Indicate Live Birth
@@ -199,8 +190,12 @@ df = df.merge(
     right_index = True)
     
 # (Indicate Singleton)
-df['SINGLETON'] = np.where((df['LIVEBIRTH'] == 1), 1, pd.NA)
-df['SINGLETON'] = np.where((df['LIVEBIRTH'] == 1) & (df['BIRTHCOUNT'] > 1), 0, df['SINGLETON'])
+df['SINGLETON'] = np.where(
+    (df['LIVEBIRTH'] == 1), 1, pd.NA)
+df['SINGLETON'] = np.where(
+    (df['LIVEBIRTH'] == 1) & (df['BIRTHCOUNT'] > 1), 0, df['SINGLETON'])
+
+df['SINGLETON'] = df['SINGLETON'].astype('Int64')
 
 # Reduce to 1 Row/Pregnant Woman
 df = df.sort_values(['UID','CHILDDOB']).groupby('UID').first()
@@ -230,11 +225,11 @@ df['SEHEMO'] = np.where(df['SEHEMO'] > 16, pd.NA, df['SEHEMO'])
 for i in ['SEFETABS','SVXFETABS','SMFETABS','SM3FETABS']:
     print(df.value_counts(i, dropna = False))
     
-# Visit 1/PEF
+# (Visit 1/PEF)
 for i in ['SVXHEMO','SMHEMO','SM3HEMO']:
     df[i] = np.where(df['SEFETABS'] == 1, pd.NA, df[i])
 
-# Visit 3/MDAB
+# (Visit 3/MDAB)
 df['SM3HEMO'] = np.where(df['SMFETABS'] == 1, pd.NA, df['SM3HEMO'])
 
 ##### Prepare Drinking Water Elements ##########################################
@@ -279,15 +274,7 @@ df['wAs'].groupby(df['wAs'].isnull()).count()
 df['wFe'].groupby(df['wFe'].isnull()).count()
 
 # Check Distributions
-density_plot(data = df, x = 'wAs', 
-    xlab = "Drinking Water Arsenic (µg/L)")
-density_plot(data = df, x = 'wFe', 
-    xlab = "Drinking Water Iron (µg/L)")
-
-density_plot(data = df, x = 'ln_wAs', 
-    xlab = "Drinking Water Arsenic (µg/L)")
-density_plot(data = df, x = 'ln_wFe', 
-    xlab = "Drinking Water Iron (µg/L)")
+df[['wAs','ln_wAs','wFe','ln_wFe']].describe()
 
 ##### Maternal Age #############################################################
 # Check Source Variables 
@@ -304,22 +291,11 @@ df['SEYEAR'].value_counts()
 df['AGE'] = df['SEYEAR'] - df['DOBYY']
 
 # Check Distribution
-box_plot(data = df, y = 'AGE', 
-    ylab = 'Maternal Age (years)')
-
-density_plot(data = df, x = 'AGE', 
-    xlab = 'Maternal Age (years)')
+df['AGE'].describe()
 
 ##### Gestational Age (Visits 1-2) #############################################
 # Check Source Variables
-box_plot(data = df, y = 'BGLMPWK', 
-    ylab = 'J-Week at LMP')
-
-box_plot(data = df, y = 'SEWKINT', 
-    ylab = 'J-Week at Visit 1/PEF')
-    
-box_plot(data = df, y = 'SVXWKINT', 
-    ylab = 'J-Week at Visit 2/VAXF')
+df[['BGLMPWK','SEWKINT','SVXWKINT']].describe()
 
 # Derive Gestational Ages
 df['SEGSTAGE']  = df['SEWKINT']  - df['BGLMPWK']
@@ -331,17 +307,14 @@ df['SVXGSTAGE'].value_counts(dropna = False)
 
 ##### Days Postpartum (Visits 3-4) #############################################
 # Check Source Variables
-box_plot(data = df, y = 'CHILDDOB', ylab = 'Child Date of Birth')
-box_plot(data = df, y = 'SMDATE', ylab = 'Date at Visit 3/MDAB')
-box_plot(data = df, y = 'SM3DATE', ylab = 'Date at Visit 4/M3MOP')
+df[['CHILDDOB','SMDATE','SM3DATE']].describe()
     
 # Derive Days Postpartum
 df['SMDAYSPP']  = (df['SMDATE']  - df['CHILDDOB']).dt.days
 df['SM3DAYSPP'] = (df['SM3DATE'] - df['CHILDDOB']).dt.days
 
 # Check Distributions
-box_plot(data = df, y = 'SMDAYSPP', ylab = 'Days Postpartum Visit 3/MDAB')
-box_plot(data = df, y = 'SM3DAYSPP', ylab = 'Days Postpartum at Visit 4/M3MOP')
+df[['SMDAYSPP','SM3DAYSPP']].describe()
 
 ##### Parity ###################################################################
 # Top-code Parity (0, 1, 2)
@@ -383,27 +356,11 @@ df['EDUCATION'].value_counts(sort = False, dropna = False)
 
 ##### Living Standards Index ###################################################
 # Check Distributions
-box_plot(
-    data = df, 
-    y = 'LSI', 
-    ylab = 'Living Standards Index')
-
-density_plot(
-    data = df, 
-    x = 'LSI', 
-    xlab = 'Living Standards Index')
+df['LSI'].describe()
 
 ##### Mid-upper Arm Circumference ##############################################
 # Check Distributions
-box_plot(
-    data = df, 
-    y = 'medSEMUAC', 
-    ylab = 'Mid-upper Arm Circumference (cm)')
-
-density_plot(
-    data = df, 
-    x = 'medSEMUAC', 
-    xlab = 'Mid-upper Arm Circumference (cm)')
+df['medSEMUAC'].describe()
 
 ##### Husband's Smoking ########################################################
 # Label Husband's Smoking (Yes/No)
@@ -425,8 +382,8 @@ df['PEHCIGAR'].value_counts(sort = False, dropna = False)
 df['ln_SEFER'] = np.log(df['SEFER'])
 
 # Check Distributions
-density_plot(data = df, x = 'SEFER', xlab = "Plasma Ferritin (ng/mL)")
-density_plot(data = df, x = 'ln_SEFER', xlab = "Plasma Ferritin (ng/mL)")
+df[['SEFER','ln_SEFER']].describe()
 
 ##### Prepare Final Data Set ###################################################
 df.head()
+
