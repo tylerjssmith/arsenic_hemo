@@ -62,8 +62,17 @@ df_slb['SMDAYSPP7'] = np.where(
     (df_slb['VISIT3'] == 1) & (df_slb['SMDAYSPP'] <= 7), 
         0, df_slb['SMDAYSPP7'])
 
+df_slb['SMDAYSPP7'] = df_slb['SMDAYSPP7'].astype('category')
+
+df_slb['SMDAYSPP7'] = df_slb['SMDAYSPP7']\
+    .cat\
+    .rename_categories({
+        0: '≤7', 
+        1: '>7'})
+
 # Check Values
 df_slb['SMDAYSPP7'].value_counts(dropna = False)
 
+# Inspect Data
 df_slb.head()
 

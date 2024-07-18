@@ -237,7 +237,8 @@ df['SVXHEMO'] = pd.to_numeric(df['SVXHEMO'], errors = 'coerce')
 
 # Standardize Missing Values
 for i in ['SEHEMO','SVXHEMO','SMHEMO','SM3HEMO']:
-    df[i] = np.where(df[i] == 99.9, np.nan, df[i])
+    df[i] = np.where(df[i] == 99.9, 
+        np.nan, df[i])
     
 # Set Erroneous Hemoglobin Value to Missing
 df['SEHEMO'] = np.where(
@@ -264,35 +265,23 @@ for i in ['SM3HEMO']:
 ##### Prepare Drinking Water Elements ##########################################
 # Drinking Water Arsenic
 df['wAs'] = np.where(
-    # if wAs at Visit 1 is missing
+    # If wAs at Visit 1 is missing,
     np.isnan(df['PE_wMetals_As']), 
-  
-    # use wAs at Visit 2
-    df['VX_wMetals_As'], 
-  
-    # else use wAs at Visit 1
-    df['PE_wMetals_As'])
+        # use wAs at Visit 2; else use wAs at Visit 1.
+        df['VX_wMetals_As'], df['PE_wMetals_As'])
 
 # Drinking Water Iron
 df['wFe'] = np.where(
-    # if wFe at Visit 1 is missing
+    # If wFe at Visit 1 is missing,
     np.isnan(df['PE_wMetals_Fe']), 
-    
-    # use wFe at Visit 2
-    df['VX_wMetals_Fe'], 
-    
-    # else use wFe at Visit 1
-    df['PE_wMetals_Fe'])
+        # use wFe at Visit 2; else use wFe at Visit 1.
+        df['VX_wMetals_Fe'], df['PE_wMetals_Fe'])
   
 df['wFe'] = np.where(
-    # if wFe at visit 1 is erroneous (according to laboratory)
+    # If wFe at visit 1 is erroneous (according to laboratory),
     df['PE_wMetals_Fe'] > 284000, 
-    
-    # use wFe at visit 2
-    df['VX_wMetals_Fe'],
-    
-    # else use wFe at visit 1
-    df['wFe'])
+        # use wFe at Visit 2; else use wFe at Visit 1.
+        df['VX_wMetals_Fe'], df['wFe'])
 
 # Log-transform Drinking Water Elements
 df['ln_wAs'] = np.log(df['wAs'])
@@ -471,9 +460,12 @@ df = df[[
     # Exposures: Drinking Water Elements
     'wAs', 'wFe', 'ln_wAs', 'ln_wFe',
     
-    # Other Covariates
+    # Potential Confounders
     'AGE', 'SEGSTAGE', 'SVXGSTAGE', 'SMDAYSPP', 'SM3DAYSPP', 'PARITY', 
-    'EDUCATION', 'LSI', 'medSEMUAC', 'PEHCIGAR', 'SEFER', 'ln_SEFER']]
+    'EDUCATION', 'LSI', 'medSEMUAC', 'PEHCIGAR', 
+    
+    # Potential Mediators
+    'SEFER', 'ln_SEFER']]
 
 # Inspect Data
 df.head()
