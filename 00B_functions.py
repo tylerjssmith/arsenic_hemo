@@ -7,7 +7,7 @@
 
 ##### Function: tidy ###########################################################
 # Define function `tidy` to gather model estimates in tidy data frame.
-def tidy(models, names):
+def tidy(models, names, x = ['ln_wAs_iqr','ln_wFe_iqr']):
     
     out = pd.DataFrame()
 
@@ -26,6 +26,6 @@ def tidy(models, names):
         name += 1
 
     out = out.reset_index(names = 'term')
-    out = out[out['term'].isin(['ln_wAs_iqr','ln_wFe_iqr'])]
+    out = out[out['term'].isin(x)]
 
     return(out)
