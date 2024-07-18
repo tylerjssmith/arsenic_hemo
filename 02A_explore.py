@@ -55,5 +55,5 @@ for i in ['VISIT1','VISIT2','VISIT3','VISIT4']:
     file_name = 'table1_' + i + '.xlsx'
     out.to_excel('../../portfolio/arsenic_hemo/tables/' + file_name)
     
-del columns, continuous, categorical
+del columns, continuous, categorical, file_name, out
 
