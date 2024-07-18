@@ -6,9 +6,9 @@
 # May 29, 2023
 
 ##### Function: tidy ###########################################################
-# Define function `tidy` to gather model estimates in tidy data frame.
 def tidy(models, names, x = ['ln_wAs_iqr','ln_wFe_iqr']):
-    
+    """From list of models, puts estimates for covariates x in tidy DataFrame 
+    with rows labeled from list of names."""
     out = pd.DataFrame()
 
     name = 0
@@ -28,4 +28,49 @@ def tidy(models, names, x = ['ln_wAs_iqr','ln_wFe_iqr']):
     out = out.reset_index(names = 'term')
     out = out[out['term'].isin(x)]
 
-    return(out)
+    return out
+
+##### Function: get_diagnostics ################################################
+def get_diagnostics(model):
+    """For model, make data frame with diagnostic information. This function
+    will be called by diagnostic_plots()."""
+    df = pd.DataFrame()
+    
+    df['resid'] = model.resid
+    df['fitted'] = model.fittedvalues
+    
+    return df
+
+##### Function: diagnostic_plots ###############################################
+def diagnostic_plots(model, name = None):
+    """For model, generates standard diagnostic plots."""
+    df = get_diagnostics(model)
+
+    fig, axes = plt.subplots(1, 2)
+
+    axes[0].axvline(x = 0, linestyle = '--', color = 'red')
+    axes[1].axhline(y = 0, linestyle = '--', color = 'red')
+
+    sns.kdeplot(ax = axes[0], data = df, x = 'resid', color = 'gray')
+    sns.regplot(ax = axes[1], data = df, x = 'fitted', y = 'stand', 
+        lowess = True, scatter_kws = {'color': 'gray', 'alpha': 0.4}, 
+        line_kws = {'color': 'black'})
+
+    if name != None:
+        title = 'Diagnostic Plots: ' + name
+    else:
+        title = 'Diagnostic Plots'
+
+    fig.suptitle(title)
+
+    axes[0].set_title('Density Plot of Residuals')
+    axes[1].set_title('Residuals vs Fitted')
+
+    axes[0].set_xlabel('Residuals')
+    axes[1].set_xlabel('Fitted Values')
+
+    axes[0].set_ylabel('Density')
+    axes[1].set_ylabel('Residuals')
+
+    plt.show()
+

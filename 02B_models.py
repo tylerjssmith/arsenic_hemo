@@ -68,6 +68,23 @@ for i in ['VISIT1','VISIT2','VISIT3','VISIT4']:
     print('Model for ' + i + ' has been fitted.')
 
 ###### Check Model Fit #########################################################
+# Unadjusted: Arsenic
+diagnostic_plots(mdl_unaj_VISIT1_wAs, name = 'Visit 1, Unadjusted, Arsenic')
+diagnostic_plots(mdl_unaj_VISIT2_wAs, name = 'Visit 2, Unadjusted, Arsenic')
+diagnostic_plots(mdl_unaj_VISIT3_wAs, name = 'Visit 3, Unadjusted, Arsenic')
+diagnostic_plots(mdl_unaj_VISIT4_wAs, name = 'Visit 4, Unadjusted, Arsenic')
+
+# Unadjusted: Iron
+diagnostic_plots(mdl_unaj_VISIT1_wFe, name = 'Visit 1, Unadjusted, Iron')
+diagnostic_plots(mdl_unaj_VISIT2_wFe, name = 'Visit 2, Unadjusted, Iron')
+diagnostic_plots(mdl_unaj_VISIT3_wFe, name = 'Visit 3, Unadjusted, Iron')
+diagnostic_plots(mdl_unaj_VISIT4_wFe, name = 'Visit 4, Unadjusted, Iron')
+
+# Adjusted
+diagnostic_plots(mdl_adju_VISIT1, name = 'Visit 1, Adjusted')
+diagnostic_plots(mdl_adju_VISIT2, name = 'Visit 2, Adjusted')
+diagnostic_plots(mdl_adju_VISIT3, name = 'Visit 3, Adjusted')
+diagnostic_plots(mdl_adju_VISIT4, name = 'Visit 4, Adjusted')
 
 ##### Tidy Model Output ########################################################
 # Unadjusted: Drinking Water Arsenic
