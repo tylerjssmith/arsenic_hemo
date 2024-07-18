@@ -116,18 +116,18 @@ df_fig['Visit'] = df_fig['Visit']\
 df_fig.head()
 
 # Generate Figure
-fig, axes = plt.subplots()
+fig = plt.figure()
 
-fig.suptitle('Maternal Hemoglobin by Study Visit')
-
-sns.kdeplot(data = df_fig, x = 'HEMO', hue = 'Visit',
+g = sns.kdeplot(data = df_fig, x = 'HEMO', hue = 'Visit',
     fill = True)
 
-axes.set(
-    xlabel = 'Hemoglobin (g/dL)',
-    ylabel = 'Density')
+g.set_title('Maternal Hemoglobin by Study Visit\n\
+    PAIR Study, Gaibandha District, Bangladesh, 2018-2019')
+g.set_xlabel('Hemoglobin (g/dL)')
+g.set_ylabel('Density')
 
-plt.show()
+plt.savefig('../../portfolio/arsenic_hemo/figures/hemo_by_study_visit.png',
+    dpi = 400, bbox_inches = 'tight')
 
 ##### Figure: Hemoglobin by Gestational Week ###################################
 # Prepare Data
@@ -175,19 +175,6 @@ df_fig = df_fig[['UID','Visit','WEEK','HEMO']]
 df_fig.head()
 
 # Make Figure
-fig, axes = plt.subplots()
-
-g = sns.scatterplot(
-    x = 'WEEK', y = 'HEMO', hue = 'Visit', data = df_fig,
-        alpha = 0.4)
-    
-g.set_title('Maternal Hemoglobin by Gestational Age')
-g.set_xlabel('Gestational Age (weeks)')
-g.set_ylabel('Hemoglobin (g/dL)')
-
-plt.show()
-
-# Make Figure
 fig = plt.figure()
 
 g1 = sns.relplot(
@@ -199,51 +186,40 @@ g2 = sns.regplot(
         lowess = True, scatter = False, 
         line_kws = {'color': 'black'})
     
-g1.set(title = 'Maternal Hemoglobin by Gestational Age')
+g1.set(title = 'Maternal Hemoglobin in Pregnancy by Study Visit\n\
+PAIR Study, Gaibandha District, Bangladesh, 2018-2019')
     
 g1.set_axis_labels(
     x_var = 'Gestational Age (weeks)',
     y_var = 'Hemoglobin (g/dL)')
 
-plt.show()
+plt.savefig('../../portfolio/arsenic_hemo/figures/hemo_by_gestational_age.png',
+    dpi = 400, bbox_inches = 'tight')
 
 ##### Figure: Hemoglobin by Drinking Water Arsenic and Iron ####################
 # Scatter Plots
-fig, ax = plt.subplots(1, 2)
+fig, (ax1, ax2) = plt.subplots(ncols = 2, sharey = True)
 
-ax[0].plot(df['ln_wAs'], df['SEHEMO'],
-    marker = 'o', markersize = 4, linestyle = 'None', 
-    alpha = 0.4, color = 'gray')
+g1 = sns.regplot(ax = ax1, x = 'ln_wAs', y = 'SEHEMO', data = df_slb,
+    lowess = True, scatter = True, line_kws = {'color': 'black'},
+    scatter_kws = {'color': 'gray', 'alpha': 0.4})
 
-ax[1].plot(df['ln_wFe'], df['SEHEMO'],
-    marker = 'o', markersize = 4, linestyle = 'None', 
-    alpha = 0.4, color = 'gray')
+g2 = sns.regplot(ax = ax2, x = 'ln_wFe', y = 'SEHEMO', data = df_slb,
+    lowess = True, scatter = True, line_kws = {'color': 'black'},
+    scatter_kws = {'color': 'gray', 'alpha': 0.4})
 
-ax[0].set_title('Arsenic')
-ax[1].set_title('Iron')
+fig.suptitle('Hemoglobin at Visit 1 by Drinking Water Arsenic and Iron\n\
+PAIR Study, Gaibandha District, Bangladesh, 2018-2019')
 
-fig.suptitle('Hemoglobin by Drinking Water Arsenic and Iron at Visit 1')
+g1.set_xlabel('Log Drinking Water Arsenic (µg/L)')
+g2.set_xlabel('Log Drinking Water Iron (µg/L)')
 
-plt.show()
-
-##### Figure: Plasma Ferritin by Drinking Water Iron ###########################
-# Scatter Plots
-fig, ax = plt.subplots(1, 2)
-
-ax[0].plot(df['wFe'], df['SEFER'],
-    marker = 'o', markersize = 4, linestyle = 'None', 
-    alpha = 0.4, color = 'blue')
-
-ax[1].plot(df['ln_wFe'], df['ln_SEFER'],
-    marker = 'o', markersize = 4, linestyle = 'None', 
-    alpha = 0.4, color = 'orange')
-
-ax[0].set_title('Original')
-ax[1].set_title('Log')
-
-fig.suptitle('Plasma Ferritin by Drinking Water Iron in Pregnancy by Scale')
-fig.supxlabel('Drinking Water Iron (µg/L)')
-fig.supylabel('Plasma Ferritin (ng/mL)')
+g1.set_ylabel('Hemoglobin (g/dL)')
+g2.set_ylabel('Hemoglobin (g/dL)')
 
 plt.show()
+
+plt.savefig('../../portfolio/arsenic_hemo/figures/hemo_by_arsenic_iron.png',
+    dpi = 400, bbox_inches = 'tight')
+
 
