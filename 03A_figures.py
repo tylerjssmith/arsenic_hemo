@@ -84,7 +84,8 @@ plt.show()
 ##### Figure: Hemoglobin by Visit ##############################################
 # Extract Data
 df_fig = df_slb[['SEHEMO','SVXHEMO','SMHEMO','SM3HEMO']]\
-    .melt()\
+    .reset_index()\
+    .melt(id_vars = 'UID')\
     .rename(columns = {
         'variable': 'Visit',
         'value'   : 'HEMO'})
@@ -131,15 +132,21 @@ plt.show()
 ##### Figure: Hemoglobin by Gestational Week ###################################
 # Prepare Data
 # (Select Variables)
-df_fig = df_slb[[
+df_fig = df_slb.reset_index()
+
+df_fig = df_fig[[
+    'UID',
     'SEGSTAGE',
     'SVXGSTAGE',
     'SEHEMO',
     'SVXHEMO']]
 
+df_fig.head()
+
 # (Reshape Data)
 df_fig = pd.melt(df_fig, 
     id_vars = [
+        'UID',
         'SEGSTAGE',
         'SVXGSTAGE'])
         
@@ -147,6 +154,8 @@ df_fig = df_fig.rename(
     columns = {
         'variable': 'Visit', 
         'value'   : 'HEMO'})
+
+df_fig.head()
 
 # (Prepare Visit)
 df_fig['WEEK'] = np.where(
@@ -162,7 +171,7 @@ df_fig['Visit'] = df_fig['Visit']\
         'SVXHEMO': 'Visit 2'})
 
 # (Select Final Variables)
-df_fig = df_fig[['Visit','WEEK','HEMO']]
+df_fig = df_fig[['UID','Visit','WEEK','HEMO']]
 df_fig.head()
 
 # Make Figure
@@ -175,6 +184,26 @@ g = sns.scatterplot(
 g.set_title('Maternal Hemoglobin by Gestational Age')
 g.set_xlabel('Gestational Age (weeks)')
 g.set_ylabel('Hemoglobin (g/dL)')
+
+plt.show()
+
+# Make Figure
+fig = plt.figure()
+
+g1 = sns.relplot(
+    x = 'WEEK', y = 'HEMO', hue = 'Visit', data = df_fig, 
+    kind = 'scatter', alpha = 0.4)
+
+g2 = sns.regplot(
+    x = 'WEEK', y = 'HEMO',  data = df_fig,
+        lowess = True, scatter = False, 
+        line_kws = {'color': 'black'})
+    
+g1.set(title = 'Maternal Hemoglobin by Gestational Age')
+    
+g1.set_axis_labels(
+    x_var = 'Gestational Age (weeks)',
+    y_var = 'Hemoglobin (g/dL)')
 
 plt.show()
 
@@ -217,6 +246,4 @@ fig.supxlabel('Drinking Water Iron (µg/L)')
 fig.supylabel('Plasma Ferritin (ng/mL)')
 
 plt.show()
-
-##### Figure: Linear Regression Estimates ######################################
 
